@@ -97,11 +97,11 @@ public class BodySourceView : MonoBehaviour
             
             if(body.IsTracked)
             {
-                if(!_Bodies.ContainsKey(body.TrackingId))
+                if (!_Bodies.ContainsKey(body.TrackingId))
                 {
                     _Bodies[body.TrackingId] = CreateBodyObject(body.TrackingId);
                 }
-                
+
                 RefreshBodyObject(body, _Bodies[body.TrackingId]);
             }
         }
