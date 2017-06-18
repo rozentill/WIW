@@ -40,6 +40,7 @@ public class BodyControl : MonoBehaviour {
             return;
         }
 
+
         //List<ulong> trackedIds = new List<ulong>();
         //foreach (var body in data)
         //{
@@ -66,99 +67,166 @@ public class BodyControl : MonoBehaviour {
         //        knownIds.Remove(trackingId);
         //    }
         //}
-
+        int numBody=0;
+        List<ulong> trackedIds = new List<ulong>();
         foreach (var body in data)
         {
+            if (body == null)
+            {
+                continue;
+            }
+
             if (body.IsTracked)
             {
+                numBody++;
+                trackedIds.Add(body.TrackingId);
 
-                Kinect.Joint head = body.Joints[Kinect.JointType.Head];
-                Kinect.Joint neck = body.Joints[Kinect.JointType.Neck];
-                Kinect.Joint spineShoulder = body.Joints[Kinect.JointType.SpineShoulder];
-                Kinect.Joint spineBase = body.Joints[Kinect.JointType.SpineBase];
-                Kinect.Joint handTipLeft = body.Joints[Kinect.JointType.HandTipLeft];
-                Kinect.Joint handTipRight = body.Joints[Kinect.JointType.HandTipRight];
-                Kinect.Joint knee = body.Joints[Kinect.JointType.KneeRight];
-                Kinect.Joint lHand = body.Joints[Kinect.JointType.HandLeft];
-                Kinect.Joint rHand = body.Joints[Kinect.JointType.HandRight];
-                Kinect.Joint lShoulder = body.Joints[Kinect.JointType.ShoulderLeft];
-                Kinect.Joint rShoulder = body.Joints[Kinect.JointType.ShoulderRight];
-                Kinect.Joint lFoot = body.Joints[Kinect.JointType.FootLeft];
-                Kinect.Joint rFoot = body.Joints[Kinect.JointType.FootRight];
-                Kinect.Joint lAnkle = body.Joints[Kinect.JointType.AnkleLeft];
-                Kinect.Joint rAnkle = body.Joints[Kinect.JointType.AnkleRight];
-
-                float deltaHorizon1 = head.Position.X - neck.Position.X;
-                float deltaHorizon2 = neck.Position.X - spineShoulder.Position.X;
-                
-                //Debug.Log("delta 1: " + deltaHorizon1+"\n");
-                //Debug.Log("delta 2: " + deltaHorizon2+ "\n");
-
-                if (deltaHorizon1 > 5.3 * deltaHorizon2)//left
-                {
-                    isLeft = true;
-                    isRight = false;
-                }
-
-                else if (deltaHorizon1 < 3.3 * deltaHorizon2)//right
-                {
-
-                    isRight = true;
-                    isLeft = false;
-                }
-                else
-                {
-                    isLeft = false;
-                    isRight = false;
-                }
-
-                if (handTipLeft.Position.Y > spineShoulder.Position.Y || handTipRight.Position.Y > spineShoulder.Position.Y)
-                {
-                    isUp = true;
-                    isDown = false;
-                }
-                else if (handTipLeft.Position.Y < knee.Position.Y || handTipRight.Position.Y < knee.Position.Y)
-                {
-                    isUp = false;
-                    isDown = true;
-                }
-                else
-                {
-                    isDown = false;
-                    isUp = false;
-                }
-
-                if (
-                    (rHand.Position.X - lHand.Position.X) * 2
-                    <
-                    (rShoulder.Position.X - lHand.Position.X)
-                    )
-                {
-                    isClap = true;
-                }
-                else
-                {
-                    isClap = false;
-                }
-
-                if (lAnkle.Position.Y < rFoot.Position.Y)
-                {
-                    isRightStep = true;
-                }
-                else
-                {
-                    isRightStep = false;
-                }
-
-                if (rAnkle.Position.Y < lFoot.Position.Y)
-                {
-                    isLeftStep = true;
-                }
-                else
-                {
-                    isLeftStep = false;
-                }
             }
         }
+
+
+        ulong leftId, rightId;
+
+        float x_head1 = 0, x_head2 = 0;
+        float left_lhand_y = 0, left_rhand_y = 0, right_rhand_y = 0, right_lhand_y = 0, left_head_y = 0, right_head_y = 0, left_knee_y = 0, right_knee_y = 0, left_lankle_y = 0, left_rfoot_y = 0, right_rankle_y = 0, right_lfoot_y = 0;
+        float left_rshoulder_x = 0, left_lshoulder_x = 0, right_lshoulder_x = 0, right_rshoulder_x = 0, left_lhand_x = 0, left_rhand_x = 0, right_lhand_x = 0, right_rhand_x = 0;
+        if (trackedIds.Count == 2)
+        {
+            foreach (var body in data)
+            {
+                if (body.IsTracked)
+                {
+                    if (body.TrackingId == trackedIds[0])
+                    {
+                        x_head1 = body.Joints[Kinect.JointType.Head].Position.X;
+                    }
+                    else
+                    {
+                        x_head2 = body.Joints[Kinect.JointType.Head].Position.X;
+                    }
+                }
+            }
+
+            if (x_head1 < x_head2)
+            {
+                leftId = trackedIds[0];
+                rightId = trackedIds[1];
+            }
+            else
+            {
+                leftId = trackedIds[1];
+                rightId = trackedIds[0];
+            }
+
+            foreach(var body in data)
+            {
+                if (body.IsTracked)
+                {
+                    if (body.TrackingId == leftId)
+                    {
+                        left_lhand_y = body.Joints[Kinect.JointType.HandLeft].Position.Y;
+                        left_rhand_y = body.Joints[Kinect.JointType.HandRight].Position.Y;
+                        left_lhand_x = body.Joints[Kinect.JointType.HandLeft].Position.X;
+                        left_rhand_x = body.Joints[Kinect.JointType.HandRight].Position.X;
+                        left_head_y = body.Joints[Kinect.JointType.SpineShoulder].Position.Y;
+                        left_knee_y = body.Joints[Kinect.JointType.KneeRight].Position.Y;
+                        left_rshoulder_x = body.Joints[Kinect.JointType.ShoulderRight].Position.X;
+                        left_lshoulder_x = body.Joints[Kinect.JointType.ShoulderLeft].Position.X;
+                        left_lankle_y = body.Joints[Kinect.JointType.AnkleLeft].Position.Y;
+                        left_rfoot_y = body.Joints[Kinect.JointType.FootRight].Position.Y;
+                    }
+                    else if (body.TrackingId == rightId)
+                    {
+                        right_lhand_y = body.Joints[Kinect.JointType.HandLeft].Position.Y;
+                        right_rhand_y = body.Joints[Kinect.JointType.HandRight].Position.Y;
+                        right_lhand_x = body.Joints[Kinect.JointType.HandLeft].Position.X;
+                        right_rhand_x = body.Joints[Kinect.JointType.HandRight].Position.X;
+                        right_head_y = body.Joints[Kinect.JointType.SpineShoulder].Position.Y;
+                        right_knee_y = body.Joints[Kinect.JointType.KneeLeft].Position.Y;
+                        right_rshoulder_x = body.Joints[Kinect.JointType.ShoulderRight].Position.X;
+                        right_lshoulder_x = body.Joints[Kinect.JointType.ShoulderLeft].Position.X;
+                        right_rankle_y = body.Joints[Kinect.JointType.AnkleRight].Position.Y;
+                        right_lfoot_y = body.Joints[Kinect.JointType.FootLeft].Position.Y;
+                    }
+                }
+            }
+
+            Debug.Log("left head is :" + left_head_y + ".");
+
+            //left-right-middle
+            if (left_lhand_y < left_head_y && right_rhand_y > right_head_y)
+            {
+                isLeft = true;
+                isRight = false;
+            }
+            else if (left_lhand_y > left_head_y && right_rhand_y < right_head_y)
+            {
+                isRight = true;
+                isLeft = false;
+            }
+            else
+            {
+                isLeft = false;
+                isRight = false;
+            }
+
+            //top-down-middle
+            if (left_rhand_y > left_head_y || right_lhand_y > right_head_y)
+            {
+                isUp = true;
+                isDown = false;
+            }
+            else if (left_rhand_y < left_knee_y || right_lhand_y < right_knee_y)
+            {
+                isUp = false;
+                isDown = true;
+            }
+            else
+            {
+                isUp = false;
+                isDown = false;
+
+            }
+
+            //step
+            if (left_lankle_y < left_rfoot_y)//left step
+            {
+                isLeftStep = true;
+            }
+            else
+            {
+                isLeftStep = false;
+            }
+
+            if (right_rankle_y < right_lfoot_y)
+            {
+                isRightStep = true;
+            }
+            else
+            {
+                isRightStep = false;
+            }
+
+            //clap
+            if (
+                ((right_rhand_x - right_lhand_x)*2
+                <
+                (right_rshoulder_x - right_lshoulder_x))
+                ||
+                ((left_rhand_x - left_lhand_x) * 2
+                <
+                (left_rshoulder_x - left_lshoulder_x))
+                )
+            {
+                isClap = true;
+            }
+            else
+            {
+                isClap = false;
+            }
+
+        }
+        trackedIds.Clear();
+
     }
 }
